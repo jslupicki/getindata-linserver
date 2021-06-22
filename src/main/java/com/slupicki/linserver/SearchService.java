@@ -22,14 +22,17 @@ public class SearchService {
     private Map<String, Set<Integer>> index = Maps.newHashMap();
 
     public String getLine(int line) {
-        return "Here is line %d: %s".formatted(line, lines[line]);
+        if (line < 1 || line > lines.length) {
+            throw new NotFoundException();
+        }
+        return lines[line-1];
     }
 
     public String search(String phrase) {
         String normalizedPhrase = String.join(" ", normalizeAndSplit(phrase));
         log.info("Search for '%s' -> '%s'".formatted(phrase, normalizedPhrase));
         if (!index.containsKey(normalizedPhrase)) {
-            return null;
+            throw new NotFoundException();
         }
         return index.get(normalizedPhrase).stream()
                 .map(lineNumber -> lines[lineNumber])
