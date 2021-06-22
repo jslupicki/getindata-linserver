@@ -1,0 +1,21 @@
+GET http://localhost:8080/search?phrase=quick+brown+not
+Accept: text/plain
+
+<> 2021-06-22T201112.200.txt
+<> 2021-06-22T200619.200.txt
+<> 2021-06-22T200553.200.txt
+
+###
+GET http://localhost:8080/get/33
+Accept: text/plain
+
+###
+GET http://localhost:8080/get/2
+Accept: text/plain
+
+<> 2021-06-22T201723.200.txt
+<> 2021-06-22T201715.200.txt
+<> 2021-06-22T201559.200.txt
+<> 2021-06-22T200454.200.txt
+
+###
