@@ -1,5 +1,6 @@
 package com.slupicki.linserver;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
@@ -7,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class SearchService {
@@ -17,8 +17,8 @@ public class SearchService {
     public static final Locale LOCALE_PL = new Locale("pl", "Pl");
 
     private String[] lines;
-    private Map<String, Set<Integer>> index = Maps.newHashMap();
     private int maxPhraseLengthToIndex = -1;
+    private final Map<String, Set<Integer>> index = Maps.newHashMap();
 
     public String getLine(int line) {
         if (line < 1 || line > lines.length) {
@@ -28,21 +28,36 @@ public class SearchService {
     }
 
     public String search(String phrase) {
+        String lowerCasePhrase = phrase.toLowerCase(LOCALE_PL);
         String[] normalizedPhraseArray = normalizeAndSplit(phrase);
-        if (normalizedPhraseArray.length <= maxPhraseLengthToIndex) {
-            // Fast path
-            String normalizedPhrase = String.join(" ", normalizedPhraseArray);
-            log.info("Search for '%s' -> '%s'".formatted(phrase, normalizedPhrase));
-            if (!index.containsKey(normalizedPhrase)) {
+        List<List<String>> phrasesLists = Lists.partition(Arrays.asList(normalizedPhraseArray), maxPhraseLengthToIndex);
+        Set<Integer> allMatchedLines = Sets.newHashSet();
+        for (List<String> phraseList : phrasesLists) {
+            String normalizedPhrase = String.join(" ", phraseList);
+            Set<Integer> matchedLines = index.get(normalizedPhrase);
+            if (matchedLines == null) {
                 throw new NotFoundException();
             }
-            return index.get(normalizedPhrase).stream()
-                    .map(lineNumber -> lines[lineNumber])
-                    .collect(Collectors.joining("\n"));
-        } else {
-            // Slow path
+            if (allMatchedLines.isEmpty()) {
+                allMatchedLines = matchedLines;
+            } else {
+                allMatchedLines = Sets.intersection(allMatchedLines, matchedLines);
+            }
+            if (allMatchedLines.isEmpty()) {
+                throw new NotFoundException();
+            }
+        }
+        List<String> result = Lists.newLinkedList();
+        for (Integer matchedLine : allMatchedLines) {
+            String line = lines[matchedLine];
+            if (line.toLowerCase(LOCALE_PL).contains(lowerCasePhrase)) {
+                result.add(line);
+            }
+        }
+        if (result.isEmpty()) {
             throw new NotFoundException();
         }
+        return String.join("\n", result);
     }
 
     public String[] getLines() {
@@ -86,11 +101,6 @@ public class SearchService {
     private void indexPhrase(String[] normalizedLine, int lineNumber, int phraseLength) {
         for(int wordIndex = 0; wordIndex < normalizedLine.length - phraseLength + 1; wordIndex++) {
             String[] phraseTable = new String[phraseLength];
-/*
-            for(int i = 0; i < phraseLength; i++) {
-                phraseTable[i] = normalizedLine[wordIndex + i];
-            }
-*/
             System.arraycopy(normalizedLine, wordIndex, phraseTable, 0, phraseLength);
             String phrase = String.join(" ",phraseTable);
             if (!index.containsKey(phrase)) {

@@ -50,9 +50,15 @@ class SearchServiceTest {
     }
 
     @Test
-    void shouldFindPhraseRegardlessOfCaseAndSpaces() {
+    void shouldNotFindPhraseWithDifferentSpcaces() {
         searchService.index();
-        assertThat(searchService.search(" QuIcK   BrOwN ")).isEqualTo("quick brown");
+        Assertions.assertThrows(NotFoundException.class, () -> searchService.search("quick   brown"));
+    }
+
+    @Test
+    void shouldFindPhraseRegardlessOfCase() {
+        searchService.index();
+        assertThat(searchService.search("QuIcK BrOwN")).isEqualTo("quick brown");
     }
 
     @Test
