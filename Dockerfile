@@ -5,4 +5,5 @@ COPY *.txt .
 
 EXPOSE 8080
 
-CMD java -jar getindata-linserver.jar
+ENTRYPOINT ["java", "-jar", "getindata-linserver.jar"]
+

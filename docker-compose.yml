@@ -1,6 +1,17 @@
-version: "3.9"  # optional since v1.27.0
+version: "3.9"
 services:
-  search-service:
+  search-service-test:
     build: .
     ports:
       - "8080:8080"
+    command: test.txt
+  search-service-small:
+    build: .
+    ports:
+      - "8080:8080"
+    command: small.txt
+  search-service-20000:
+    build: .
+    ports:
+      - "8080:8080"
+    command: 20_000_mil_podmorskiej_zeglugi.txt
