@@ -17,7 +17,8 @@ class SearchServiceTest {
                 "the",
                 "quick brown",
                 "fox jumps over the",
-                "lazy dog"
+                "lazy dog",
+                "fox jumps high"
         };
         searchService.setLines(lines);
     }
@@ -67,5 +68,12 @@ class SearchServiceTest {
         assertThat(searchService.search("the").split("\n"))
                 .containsExactlyInAnyOrder("the", "fox jumps over the");
 
+    }
+
+    @Test
+    void shouldFindPhraseContainingMultipleWordsWhenIndexHaveOnlyShorterPhrases() {
+        searchService.setMaxPhraseLengthToIndex(2);
+        searchService.index();
+        assertThat(searchService.search("fox jumps over")).isEqualTo("fox jumps over the");
     }
 }
