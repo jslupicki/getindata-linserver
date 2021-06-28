@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+/docker-jmeter/report/
+/docker-jmeter/jmeter.log
+/docker-jmeter/test-plan.jtl
+/agregate-graph.csv
+/response-time-graph.csv
+/summary-report.csv
