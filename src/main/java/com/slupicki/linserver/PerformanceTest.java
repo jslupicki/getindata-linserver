@@ -36,6 +36,12 @@ public class PerformanceTest {
                 howLongItTakeInSeconds,
                 searchesPerSecond
         );
+        String resultOfSearch = searchService.search(SEARCH_PHRASE);
+        log.info("Phrase '{}' found in {} lines of '{}'", SEARCH_PHRASE, countLines(resultOfSearch), TEST_FILE);
+    }
+
+    private static int countLines(String resultOfSearch) {
+        return resultOfSearch.split("\r\n|\r|\n").length;
     }
 
     private static void runTest(SearchService searchService) {
