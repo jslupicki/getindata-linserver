@@ -7,6 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Service
@@ -96,6 +100,15 @@ public class SearchService {
             }
             log.info("Indexed phrases of length {}. The longest phrase is {}. Max indexed phrase will be {}", phraseLength, longestPhrase, maxPhraseLengthToIndex);
         }
+    }
+
+    public void loadFile(String fileName) throws IOException {
+        Path path = Paths.get(fileName);
+        String[] lines = Files.lines(path).toArray(String[]::new);
+        setLines(lines);
+        log.info("Readed {} lines from '{}'", lines.length, fileName);
+        index();
+        log.info("Indexed {} phrases", index.keySet().size());
     }
 
     private void indexPhrase(String[] normalizedLine, int lineNumber, int phraseLength) {
