@@ -37,3 +37,4 @@ build/
 /agregate-graph.csv
 /response-time-graph.csv
 /summary-report.csv
+/jmeter.log

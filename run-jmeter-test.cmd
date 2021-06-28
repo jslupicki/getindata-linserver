@@ -7,7 +7,7 @@ set JMETER_VERSION=latest
 set T_DIR=docker-jmeter
 
 rem Reporting dir: start fresh
-set R_DIR=%T_DIR%\report
+set R_DIR=%T_DIR%/report
 rd /s /q %R_DIR%
 mkdir %R_DIR%
 
