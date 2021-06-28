@@ -20,11 +20,11 @@ mkdir -p ${R_DIR}
 	-n -t ${T_DIR}/gettindata-linserver.jmx -l ${T_DIR}/test-plan.jtl -j ${T_DIR}/jmeter.log \
 	-e -o ${R_DIR}
 
-echo "==== jmeter.log ===="
-cat ${T_DIR}/jmeter.log
+#echo "==== jmeter.log ===="
+#cat ${T_DIR}/jmeter.log
 
-echo "==== Raw Test Report ===="
-cat ${T_DIR}/test-plan.jtl
+#echo "==== Raw Test Report ===="
+#cat ${T_DIR}/test-plan.jtl
 
 echo "==== HTML Test Report ===="
 echo "See HTML test report in ${R_DIR}/index.html"
