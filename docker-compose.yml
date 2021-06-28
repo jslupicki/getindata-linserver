@@ -1,17 +1,24 @@
 version: "3.9"
 services:
+
   search-service-test:
     build: .
     ports:
       - "8080:8080"
     command: test.txt
+    cpus: 1
+
   search-service-small:
     build: .
     ports:
       - "8080:8080"
     command: small.txt
+    cpus: 1
+
   search-service-20000:
     build: .
     ports:
       - "8080:8080"
     command: 20_000_mil_podmorskiej_zeglugi.txt
+    cpus: 1
+
