@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.HtmlUtils;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -27,8 +26,7 @@ public class AsyncController {
     public CompletableFuture<String> getLine(@PathVariable("line") int line) {
         log.info("Request for line {}", line);
         return CompletableFuture
-                .supplyAsync(() -> searchService.getLine(line))
-                .thenApplyAsync(HtmlUtils::htmlEscape);
+                .supplyAsync(() -> searchService.getLine(line));
     }
 
     @GetMapping("/search")
