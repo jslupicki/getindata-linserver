@@ -7,10 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 @Service
@@ -20,15 +16,11 @@ public class SearchService {
 
     public static final Locale LOCALE_PL = new Locale("pl", "Pl");
 
-    private String[] lines;
     private int maxPhraseLengthToIndex = -1;
     private final Map<String, Set<Integer>> index = Maps.newHashMap();
 
     public String getLine(int line) {
-        if (line < 1 || line > lines.length) {
-            throw new NotFoundException();
-        }
-        return lines[line-1];
+        return SourceText.getLine(line - 1);
     }
 
     public String search(String phrase) {
@@ -53,7 +45,7 @@ public class SearchService {
         }
         List<String> result = Lists.newLinkedList();
         for (Integer matchedLine : allMatchedLines) {
-            String line = lines[matchedLine];
+            String line = SourceText.getLine(matchedLine);
             if (line.toLowerCase(LOCALE_PL).contains(lowerCasePhrase)) {
                 result.add(line);
             }
@@ -62,14 +54,6 @@ public class SearchService {
             throw new NotFoundException();
         }
         return String.join("\n", result);
-    }
-
-    public String[] getLines() {
-        return lines;
-    }
-
-    public void setLines(String[] lines) {
-        this.lines = lines;
     }
 
     public Map<String, Set<Integer>> getIndex() {
@@ -88,7 +72,7 @@ public class SearchService {
         index.clear();
         ArrayList<String[]> normalizedLines = new ArrayList<>();
         int longestPhrase = 0;
-        for (String line : lines) {
+        for (String line : SourceText.lines()) {
             String[] normalizedLine = normalizeAndSplit(line);
             normalizedLines.add(normalizedLine);
             longestPhrase = Math.max(longestPhrase, normalizedLine.length);
@@ -100,15 +84,6 @@ public class SearchService {
             }
             log.info("Indexed phrases of length {}. The longest phrase is {}. Max indexed phrase will be {}", phraseLength, longestPhrase, maxPhraseLengthToIndex);
         }
-    }
-
-    public void loadFile(String fileName) throws IOException {
-        Path path = Paths.get(fileName);
-        String[] lines = Files.lines(path).toArray(String[]::new);
-        setLines(lines);
-        log.info("Readed {} lines from '{}'", lines.length, fileName);
-        index();
-        log.info("Indexed {} phrases", index.keySet().size());
     }
 
     private void indexPhrase(String[] normalizedLine, int lineNumber, int phraseLength) {

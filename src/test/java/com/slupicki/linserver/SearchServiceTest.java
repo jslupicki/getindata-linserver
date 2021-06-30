@@ -20,7 +20,7 @@ class SearchServiceTest {
                 "lazy dog",
                 "fox jumps high"
         };
-        searchService.setLines(lines);
+        SourceText.setLines(lines);
     }
 
     @Test
@@ -30,7 +30,7 @@ class SearchServiceTest {
 
     @Test
     void shouldThrowExceptionWhenLineNumberIsBiggerThanLastOne() {
-        Assertions.assertThrows(NotFoundException.class, () -> searchService.getLine(searchService.getLines().length + 1));
+        Assertions.assertThrows(NotFoundException.class, () -> searchService.getLine(SourceText.size() + 1));
     }
 
     @Test

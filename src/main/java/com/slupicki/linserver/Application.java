@@ -52,7 +52,8 @@ public class Application implements ApplicationRunner {
             searchService.setMaxPhraseLengthToIndex(maxPhraseLength);
             log.info("Maximum length indexed phrases is set to {}", maxPhraseLength);
         }
-        searchService.loadFile(fileName);
+        SourceText.load(fileName);
+        searchService.index();
     }
 
     @Bean()

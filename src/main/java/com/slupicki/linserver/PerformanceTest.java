@@ -14,8 +14,9 @@ public class PerformanceTest {
     private static final int HOW_OFTEN_LOG_PROGRESS = 10_000;
 
     public static void main(String[] args) throws Exception {
+        SourceText.load(TEST_FILE);
         SearchService searchService = new SearchService();
-        searchService.loadFile(TEST_FILE);
+        searchService.index();
         log.info("Start test");
         Thread[] threads = new Thread[HOW_MANY_THREADS];
         long startTime = System.currentTimeMillis();
