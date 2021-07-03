@@ -2,6 +2,8 @@ package com.slupicki.linserver;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -13,7 +15,9 @@ import java.util.stream.Collectors;
 @Service
 public class TreeSearchServiceImpl implements SearchService {
 
-    private Node root = new Node();
+    private static final Logger log = LoggerFactory.getLogger(TreeSearchServiceImpl.class);
+
+    private final Node root = new Node();
 
     @Override
     public String search(String phrase) {
@@ -45,7 +49,11 @@ public class TreeSearchServiceImpl implements SearchService {
         for (String line : SourceText.lines()) {
             List<String> tokenizedLine = tokenizer(line.toLowerCase(LOCALE_PL));
             indexLine(tokenizedLine, lineIdx++);
+            if (lineIdx % 10 == 0) {
+                log.info("Indexed line {} from {}", lineIdx, SourceText.size());
+            }
         }
+        log.info("Indexed line {} from {}", lineIdx, SourceText.size());
     }
 
     private void indexLine(List<String> tokenizedLine, int lineIdx) {
@@ -99,7 +107,7 @@ public class TreeSearchServiceImpl implements SearchService {
         }
     }
 
-    private class Node {
+    private static class Node {
         final String token;
         final Set<Integer> lines = Sets.newHashSet();
         final Map<String, Node> children = Maps.newHashMap();
@@ -110,11 +118,6 @@ public class TreeSearchServiceImpl implements SearchService {
 
         private Node(String token) {
             this.token = token;
-        }
-
-        private Node(String token, int line) {
-            this.token = token;
-            this.lines.add(line);
         }
     }
 }

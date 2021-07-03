@@ -15,13 +15,25 @@ public class PerformanceTest {
 
     public static void main(String[] args) throws Exception {
         SourceText.load(TEST_FILE);
-        IndexSearchServiceImpl searchService = new IndexSearchServiceImpl();
-        searchService.index();
+        var ref = new Object() {
+            SearchService searchService = null;
+        };
+        if (args.length == 0) {
+            ref.searchService = new IndexSearchServiceImpl();
+            log.info("Testing performance IndexSearchServiceImpl");
+        } else if (args.length == 1 && args[0].equals("--tree")) {
+            ref.searchService = new TreeSearchServiceImpl();
+            log.info("Testing performance TreeSearchServiceImpl");
+        } else {
+            log.error("Only one optional option available: --tree");
+            System.exit(1);
+        }
+        ref.searchService.index();
         log.info("Start test");
         Thread[] threads = new Thread[HOW_MANY_THREADS];
         long startTime = System.currentTimeMillis();
         for(int i = 0; i < HOW_MANY_THREADS; i++) {
-            threads[i] = new Thread(() -> runTest(searchService), "test-thread-" + i);
+            threads[i] = new Thread(() -> runTest(ref.searchService), "test-thread-" + i);
             threads[i].start();
         }
         for (Thread thread : threads) {
@@ -37,7 +49,7 @@ public class PerformanceTest {
                 howLongItTakeInSeconds,
                 searchesPerSecond
         );
-        String resultOfSearch = searchService.search(SEARCH_PHRASE);
+        String resultOfSearch = ref.searchService.search(SEARCH_PHRASE);
         log.info("Phrase '{}' found in {} lines of '{}'", SEARCH_PHRASE, countLines(resultOfSearch), TEST_FILE);
     }
 
@@ -45,7 +57,7 @@ public class PerformanceTest {
         return resultOfSearch.split("\r\n|\r|\n").length;
     }
 
-    private static void runTest(IndexSearchServiceImpl searchService) {
+    private static void runTest(SearchService searchService) {
         for(int i = 0; i < HOW_MANY_SEARCHES; i++) {
             searchService.search(SEARCH_PHRASE);
             if ((i+1) % HOW_OFTEN_LOG_PROGRESS == 0) {
