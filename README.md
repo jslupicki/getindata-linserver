@@ -49,6 +49,36 @@ fraza jest dzielona na fragmenty o długości maksimum 'n' wyrazów. Z indeksu s
 wierszy w który występuje każdy z fragmentów i jest wyliczana część wspólna zbioru a potem
 algorytm działa już jak normalnie.
 
+### Alternatywny algorytm
+
+Alternatywny indeks w postaci drzewa gdzie każdy liść to token (fragment frazy - słowo, odstęp a może nawet litera) plus zbiór wszystkich wierszy w jakich występuje
+fraza złożona ze wszystkich tokenów powyżej aż do korzenia. Dodatkowo w liściu jest mapa 'token' -> 'child' wszystkich potomków danego liścia.
+
+Przykład dla tekstu:
+1. a
+2. a b
+3. a b c
+
+
+Mielibyśmy drzewo (format liścia 'token' (wiersze w których występuje)):
+```
+root
+ ^- 'a' (1,2,3)
+     ^- ' ' (2,3)
+         ^- 'b' (2,3)
+             ^- ' ' (3)
+                 ^- 'c' (3)
+ ^- ' ' (2,3)
+     ^- 'b' (2,3)
+         ^- ' ' (3)
+             ^- 'c' (3)
+     ^- 'c' (3)
+ ^- 'b' (2,3)
+     ^- ' ' (3)
+         ^- 'c' (3)
+ ^- 'c' (3)
+```
+
 # Wymagania
 
 1. Java 15
@@ -97,7 +127,12 @@ Ten test mierzy tylko wydajność samego wyszukiwania czyli metodę 'SearchServi
 Indeksuje plik '20_000_mil_podmorskiej_zeglugi.txt' i w nim wyszukuje frazę 'Ned Land'.
 Robi to w 24 wątkach 100 000 razy w każdym wątku co daje razem 2 400 000.
 
-Na moim komputerze wydajność była równa 60 000 wyszukań na sekundę.
+Skrypt przyjmuje jeden opcjonalny parameter '`--tree`'. Gdy jest on obecny to testuje
+`TreeSearchServiceImpl` zamiast domyślnej `IndexSearchServiceImpl`.
+
+Na moim komputerze wydajność była równa:
+* `IndexSearchServiceImpl` -> 60 000 wyszukań na sekundę.
+* `TreeSearchServiceImpl` -> 80 000 wyszukań na sekundę.
 
 ## Uruchomienie testów JMeter
 
@@ -121,35 +156,3 @@ Najwidoczniej JMeter i search-service-20000 walczyły o procesor.
 
 1. Dodać testy samego kontrolera
 2. Dodać komentarze JavaDoc
-3. Wymyśliłem lepszą (chyba) strukturę danych na indeks w postaci drzewa możliwych fraz - przydałoby się porównać wyniki zajętości pamięci i wydajności.
-   Ta struktura to drzewo gdzie każdy liść to token (fragment frazy - słowo, odstęp a może nawet litera) plus zbiór wszystkich wierszy w jakich występuje
-   fraza złożóna ze wszystkich tokenów powyżej aż do korzenia. Dodatkowo w liściu byłaby mapa 'token' -> 'child' wszystkich potomków danego liścia.
-   Powinna być całkiem szybka w wyszukiwaniu a także pewnie zajmować mniej pamięci.
-
-Przykład dla tekstu:
-1. a
-2. a b
-3. a b c
-
-
-Mielibyśmy drzewo (format liścia 'token' (wiersze w których występuje)):
-```
-root
- ^- 'a' (1,2,3)
-     ^- ' ' (2,3)
-         ^- 'b' (2,3)
-             ^- ' ' (3)
-                 ^- 'c' (3)
- ^- ' ' (2,3)
-     ^- 'b' (2,3)
-         ^- ' ' (3)
-             ^- 'c' (3)
-     ^- 'c' (3)
- ^- 'b' (2,3)
-     ^- ' ' (3)
-         ^- 'c' (3)
- ^- 'c' (3)
-```
-
- 
- 
