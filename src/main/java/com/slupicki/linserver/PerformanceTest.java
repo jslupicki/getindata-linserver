@@ -15,7 +15,7 @@ public class PerformanceTest {
 
     public static void main(String[] args) throws Exception {
         SourceText.load(TEST_FILE);
-        SearchService searchService = new SearchService();
+        IndexSearchServiceImpl searchService = new IndexSearchServiceImpl();
         searchService.index();
         log.info("Start test");
         Thread[] threads = new Thread[HOW_MANY_THREADS];
@@ -45,7 +45,7 @@ public class PerformanceTest {
         return resultOfSearch.split("\r\n|\r|\n").length;
     }
 
-    private static void runTest(SearchService searchService) {
+    private static void runTest(IndexSearchServiceImpl searchService) {
         for(int i = 0; i < HOW_MANY_SEARCHES; i++) {
             searchService.search(SEARCH_PHRASE);
             if ((i+1) % HOW_OFTEN_LOG_PROGRESS == 0) {

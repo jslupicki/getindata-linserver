@@ -6,13 +6,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SearchServiceTest {
+abstract class AbstractSearchServiceTest {
 
     SearchService searchService;
 
+    abstract SearchService getServiceUnderTest();
+
     @BeforeEach
     void setUp() {
-        searchService = new SearchService();
+        searchService = getServiceUnderTest();
         String[] lines = {
                 "the",
                 "quick brown",
@@ -68,12 +70,5 @@ class SearchServiceTest {
         assertThat(searchService.search("the").split("\n"))
                 .containsExactlyInAnyOrder("the", "fox jumps over the");
 
-    }
-
-    @Test
-    void shouldFindPhraseContainingMultipleWordsWhenIndexHaveOnlyShorterPhrases() {
-        searchService.setMaxPhraseLengthToIndex(2);
-        searchService.index();
-        assertThat(searchService.search("fox jumps over")).isEqualTo("fox jumps over the");
     }
 }

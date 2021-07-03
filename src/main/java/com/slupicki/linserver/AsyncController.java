@@ -15,9 +15,9 @@ public class AsyncController {
 
     private final Logger log = LoggerFactory.getLogger(AsyncController.class);
 
-    private final SearchService searchService;
+    private final IndexSearchServiceImpl searchService;
 
-    public AsyncController(SearchService searchService) {
+    public AsyncController(IndexSearchServiceImpl searchService) {
         this.searchService = searchService;
     }
 

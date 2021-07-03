@@ -24,9 +24,9 @@ public class Application implements ApplicationRunner {
     public static final String LIMIT_OPTION = "limit";
     public static final String DEFAULT_INPUT_FILE = "test.txt";
 
-    private final SearchService searchService;
+    private final IndexSearchServiceImpl searchService;
 
-    public Application(SearchService searchService) {
+    public Application(IndexSearchServiceImpl searchService) {
         this.searchService = searchService;
     }
 
