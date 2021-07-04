@@ -38,3 +38,4 @@ build/
 /response-time-graph.csv
 /summary-report.csv
 /jmeter.log
+/rust-test/Cargo.lock
