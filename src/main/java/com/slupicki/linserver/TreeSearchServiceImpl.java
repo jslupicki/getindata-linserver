@@ -81,21 +81,12 @@ public class TreeSearchServiceImpl implements SearchService {
         StringBuilder token = new StringBuilder();
         boolean lastWasLetter = true;
         for (char c : line.toCharArray()) {
-            if (Character.isLetter(c)) {
-                if (!lastWasLetter) {
-                    addTokenIfNotEmpty(token, result);
-                    token = new StringBuilder();
-                }
-                token.append(c);
-                lastWasLetter = true;
-            } else {
-                if (lastWasLetter) {
-                    addTokenIfNotEmpty(token, result);
-                    token = new StringBuilder();
-                }
-                token.append(c);
-                lastWasLetter = false;
+            if (Character.isLetter(c) != lastWasLetter) {
+                addTokenIfNotEmpty(token, result);
+                token = new StringBuilder();
             }
+            token.append(c);
+            lastWasLetter = Character.isLetter(c);
         }
         addTokenIfNotEmpty(token, result);
         return result;
