@@ -11,7 +11,7 @@ fn tokenizer(t: &str) -> Vec<&str> {
     let mut li = 0;
     let mut last_was_whitespace = false;
     for (i, c) in t.chars().enumerate() {
-        if c.is_whitespace() != last_was_whitespace {
+        if c.is_whitespace() != last_was_whitespace && li < i {
                 r.push(&t[li..i]);
                 li = i;
         }
@@ -26,7 +26,10 @@ fn main() {
 quick brown
 fox jumps   over the
 lazy dog
-Jerzy Brzęczyszczykiewicz";
+Jerzy Brzęczyszczykiewicz
+
+ abba
+ abba ";
     let lines: Vec<&str> = txt.lines().collect();
     println!("-------------");
     println!("'{}'", txt);
