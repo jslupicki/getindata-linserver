@@ -8,8 +8,8 @@ IMAGE="justb4/jmeter:${JMETER_VERSION}"
 
 # Finally run
 if [ -z "${TARGET_NETWORK}" ]; then
-  docker run --rm --name ${NAME} -i -v ${PWD}:${PWD} -w ${PWD} ${IMAGE} $@
+  docker run --cpus=8 --rm --name ${NAME} -i -v ${PWD}:${PWD} -w ${PWD} ${IMAGE} $@
 else
-  docker run --rm --name ${NAME} -i -v ${PWD}:${PWD} -w ${PWD} --network ${TARGET_NETWORK} ${IMAGE} $@
+  docker run --cpus=8 --rm --name ${NAME} -i -v ${PWD}:${PWD} -w ${PWD} --network ${TARGET_NETWORK} ${IMAGE} $@
 fi
 
