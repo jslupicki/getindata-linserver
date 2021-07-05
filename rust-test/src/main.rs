@@ -7,16 +7,32 @@ struct Node<'a> {
 }
 
 fn tokenizer(t: &str) -> Vec<&str> {
-    let mut r = Vec::new();
+    let mut r = Vec::with_capacity(512);
     let mut li = 0;
     let mut last_was_whitespace = false;
     for (i, c) in t.chars().enumerate() {
         if c.is_whitespace() != last_was_whitespace && li < i {
-                r.push(&t[li..i]);
-                li = i;
+            r.push(&t[li..i]);
+            li = i;
         }
         last_was_whitespace = c.is_whitespace();
     }
+    r.push(&t[li..]);
+    r
+}
+
+fn f_tokenizer(t: &str) -> Vec<&str> {
+    let mut r = Vec::with_capacity(512);
+    let (li, last_was_whitespace) = t.chars().enumerate().fold(
+        (0, false),
+        |(li, last_was_whitespace), (i, c)|
+            if c.is_whitespace() != last_was_whitespace && li < i {
+                r.push(&t[li..i]);
+                (i, c.is_whitespace())
+            } else {
+                (li, c.is_whitespace())
+            }
+    );
     r.push(&t[li..]);
     r
 }
@@ -36,7 +52,7 @@ Jerzy Brzęczyszczykiewicz
     println!("-------------");
     for (i, l) in lines.into_iter().enumerate() {
         println!("{}: '{}'", i, l);
-        let from_tokenizer = tokenizer(l);
+        let from_tokenizer = f_tokenizer(l);
         for (ip, lp) in from_tokenizer.iter().enumerate() {
             println!("   {}: '{}'", ip, lp);
         }
