@@ -1,5 +1,4 @@
 use std::{collections::{HashMap, HashSet}, str};
-use std::borrow::Borrow;
 
 #[derive(Debug)]
 struct Node<'a> {
@@ -23,6 +22,7 @@ fn tokenizer(t: &str) -> Vec<&str> {
     r
 }
 
+#[allow(dead_code)]
 fn f_tokenizer(t: &str) -> Vec<&str> {
     let mut r = Vec::with_capacity(512);
     let (li, _) = t.chars().enumerate().fold(
@@ -52,7 +52,7 @@ fn index(txt: &str) -> Node {
 }
 
 fn index_line<'a>(line: &'a str, mut root: Node<'a>) -> Node<'a> {
-    let mut tokenized_line = tokenizer(line);
+    let tokenized_line = tokenizer(line);
     for i in 0..tokenized_line.len() {
         let mut node = &mut root;
         for token in &tokenized_line[i..] {
@@ -83,12 +83,14 @@ fn main() {
     let txt = "a
 a b
 a b c";
-    let lines: Vec<&str> = txt.lines().collect();
+    let phrases = vec!["a", "b", "c", "a b", "b c", "a b c", " ", "non existent"];
     println!("-------------");
     println!("'{}'", txt);
     println!("-------------");
     let root = index(txt);
     println!("{:#?}", root);
-    let lines = search("b", &root);
-    println!("{:#?}", lines);
+    for phrase in phrases {
+        let lines = search(phrase, &root);
+        println!("'{}' -> {:?}", phrase, lines.unwrap_or(&Default::default()));
+    }
 }
