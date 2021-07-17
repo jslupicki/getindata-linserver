@@ -1,8 +1,7 @@
 use std::{collections::{HashMap, HashSet}, env::current_dir, fs, str, sync::Arc, thread::{self, JoinHandle}};
 use stopwatch::Stopwatch;
 use num_format::{Locale, ToFormattedString};
-use itertools::Itertools;
-use arrayvec::ArrayString;
+//use itertools::Itertools;
 
 #[derive(Debug)]
 struct Node<'a> {
@@ -16,13 +15,13 @@ fn tokenizer(t: &str) -> Vec<&str> {
     let mut r = Vec::with_capacity(512);
     let mut li = 0;
     let mut i = 0;
-    let mut last_was_whitespace = false;
+    let mut last_was_alphanumeric = false;
     for c in t.chars() {
-        if c.is_whitespace() != last_was_whitespace && li < i {
+        if c.is_alphanumeric() != last_was_alphanumeric && li < i {
             r.push(&t_lowercase[li..i]);
             li = i;
         }
-        last_was_whitespace = c.is_whitespace();
+        last_was_alphanumeric = c.is_alphanumeric();
         i += c.len_utf8();
     }
     r.push(&t_lowercase[li..]);
@@ -36,12 +35,12 @@ fn f_tokenizer(t: &str) -> Vec<&str> {
     let (li, _) = t
         .chars()
         .enumerate()
-        .fold((0, false), |(li, last_was_whitespace), (i, c)| {
-            if c.is_whitespace() != last_was_whitespace && li < i {
+        .fold((0, false), |(li, last_was_alphanumeric), (i, c)| {
+            if c.is_alphanumeric() != last_was_alphanumeric && li < i {
                 r.push(&t[li..i]);
-                (i, c.is_whitespace())
+                (i, c.is_alphanumeric())
             } else {
-                (li, c.is_whitespace())
+                (li, c.is_alphanumeric())
             }
         });
     r.push(&t[li..]);
@@ -109,6 +108,7 @@ fn to_lowercase(txt: &str) -> &'static str {
     Box::leak(Box::new(txt_lowercase))
 }
 
+#[allow(dead_code)]
 fn performance_test() {
     let mut stopwatch = Stopwatch::new();
     let source_txt = read_to_string("../20_000_mil_podmorskiej_zeglugi.txt");
@@ -149,6 +149,7 @@ fn performance_test() {
     );
 }
 
+#[allow(dead_code)]
 fn basic_test() {
     let txt = "a
 a b
