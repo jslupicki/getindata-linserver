@@ -1,7 +1,35 @@
-use std::{collections::{HashMap, HashSet}, env::current_dir, fs, str, sync::Arc, thread::{self, JoinHandle}};
-use stopwatch::Stopwatch;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate rocket;
+
+use std::{
+    collections::{HashMap, HashSet},
+    env::current_dir,
+    fs, str,
+    sync::Arc,
+    thread::{self, JoinHandle},
+};
+
 use num_format::{Locale, ToFormattedString};
+use stopwatch::Stopwatch;
+
+
 //use itertools::Itertools;
+
+const SOURCE_TXT_PATH: &str = "20_000_mil_podmorskiej_zeglugi.txt";
+
+lazy_static! {
+    static ref SOURCE_TXT: &'static str = read_to_string(SOURCE_TXT_PATH);
+    static ref ROOT: Node<'static> = index(&SOURCE_TXT);
+    static ref SOURCE_LINES: Vec<&'static str> = {
+        let mut result: Vec<&'static str> = Vec::new();
+        for l in SOURCE_TXT.lines() {
+            result.push(l);
+        }
+        result
+    };
+}
 
 #[derive(Debug)]
 struct Node<'a> {
@@ -111,7 +139,7 @@ fn to_lowercase(txt: &str) -> &'static str {
 #[allow(dead_code)]
 fn performance_test() {
     let mut stopwatch = Stopwatch::new();
-    let source_txt = read_to_string("../20_000_mil_podmorskiej_zeglugi.txt");
+    let source_txt = read_to_string(SOURCE_TXT_PATH);
     println!("Read source text - {} lines", source_txt.lines().count());
     stopwatch.start();
     let indexed_source = index(source_txt);
@@ -145,7 +173,9 @@ fn performance_test() {
     println!("Searching took {:?}", search_took);
     println!(
         "Perform {}/s searches",
-        ((how_many_search as f64 * how_many_threads as f64 / search_took.as_micros() as f64 * 1_000_000f64) as i128).to_formatted_string(&Locale::en)
+        ((how_many_search as f64 * how_many_threads as f64 / search_took.as_micros() as f64
+            * 1_000_000f64) as i128)
+            .to_formatted_string(&Locale::en)
     );
 }
 
@@ -193,10 +223,11 @@ Jerzy Brzęczyszczykiewicz
 
 fn join(set_of_str: &HashSet<&str>, sep: &str) -> String {
     let sep_count = set_of_str.len() - 1;
-    let result_len: usize = set_of_str.iter().map(|s| s.len()).sum::<usize>() + sep_count * sep.len();
+    let result_len: usize =
+        set_of_str.iter().map(|s| s.len()).sum::<usize>() + sep_count * sep.len();
     let mut result = String::with_capacity(result_len);
     set_of_str.iter().enumerate().for_each(|(i, s)| {
-        result.push_str(s); 
+        result.push_str(s);
         if i < sep_count {
             result.push_str(sep);
         }
@@ -204,12 +235,41 @@ fn join(set_of_str: &HashSet<&str>, sep: &str) -> String {
     result
 }
 
-fn main() {
-/*     let phrases = vec!["a", "b", "c", "a b", "b c", "a b c", " ", "non existent"];
-    let set_of_phrases: HashSet<&str> = phrases.into_iter().collect();
-    let result = join(&set_of_phrases, ",");
-    println!("set_of_phrases: {:#?}", set_of_phrases);
-    println!("result: {}", result);
- */
-    performance_test();
+#[get("/")]
+fn r_index() -> &'static str {
+    "Hello, world!"
 }
+
+#[get("/get/<line>")]
+fn get_line(line: usize) -> String {
+    let result = format!("Ask for line {}", line);
+    println!("{}", result);
+    result
+}
+
+#[get("/search?<phrase>")]
+fn search_phrase(phrase: &str) -> String {
+    let result = format!("Search for phrase '{}'", phrase);
+    println!("{}", result);
+    result
+}
+
+#[launch]
+fn rocket() -> _ {
+    let figment = rocket::Config::figment().merge(("port", 8080));
+
+    rocket::custom(figment).mount("/", routes![r_index, get_line, search_phrase])
+}
+
+#[test]
+fn main_test() {
+     //performance_test();
+     println!("Start");
+     println!("Initializing...");
+     lazy_static::initialize(&ROOT);
+     println!("Line 10: {}", SOURCE_LINES[10]);
+/* 
+     let phrase = "Ned Land";
+     let result = search_with_result(phrase, &ROOT);
+     println!("Phrase '{}' found in lines:\n{}", phrase, result);
+ */}
