@@ -5,15 +5,10 @@ extern crate rocket;
 
 use std::{
     collections::{HashMap, HashSet},
-    env::current_dir,
     fs, str,
-    sync::Arc,
-    thread::{self, JoinHandle},
 };
 
-use num_format::{Locale, ToFormattedString};
-use stopwatch::Stopwatch;
-
+use rocket::response::status::NotFound;
 
 //use itertools::Itertools;
 
@@ -85,9 +80,12 @@ fn index(txt: &str) -> Node {
     let line_count = txt.lines().count();
     for line in txt.lines() {
         root = index_line(line, root);
-        println!("Indexed line {} from {}", l, line_count);
         l += 1;
+        if l % 100 == 0 {
+            println!("Indexed line {} from {}", l, line_count);
+        }
     }
+    println!("Indexed line {} from {}", l, line_count);
     root
 }
 
@@ -119,106 +117,14 @@ fn search<'a>(phrase: &'a str, root: &'a Node) -> Option<&'a HashSet<&'a str>> {
     Some(&node.lines)
 }
 
-fn search_with_result<'a>(phrase: &'a str, root: &'a Node) -> String {
-    let empty: &HashSet<&str> = &HashSet::new();
-    let result = search(phrase, root).unwrap_or(empty);
-    //result.iter().join("\n")
-    join(result, "\n")
-}
-
-fn read_to_string(path: &str) -> &'static str {
-    let source = fs::read_to_string(path).unwrap();
-    Box::leak(Box::new(source))
-}
-
-fn to_lowercase(txt: &str) -> &'static str {
-    let txt_lowercase = txt.to_lowercase();
-    Box::leak(Box::new(txt_lowercase))
-}
-
-#[allow(dead_code)]
-fn performance_test() {
-    let mut stopwatch = Stopwatch::new();
-    let source_txt = read_to_string(SOURCE_TXT_PATH);
-    println!("Read source text - {} lines", source_txt.lines().count());
-    stopwatch.start();
-    let indexed_source = index(source_txt);
-    stopwatch.stop();
-    let indexing_took = stopwatch.elapsed();
-    let index_source = Arc::new(indexed_source);
-    let mut handles: Vec<JoinHandle<()>> = Default::default();
-    let how_many_search = 10_000;
-    let how_many_threads = 24;
-    stopwatch.restart();
-    for _ in 0..how_many_threads {
-        let local_index_source = index_source.clone();
-        let handle = thread::spawn(move || {
-            let phrase = "Ned Land";
-            for _ in 0..how_many_search {
-                //search(phrase, &local_index_source);
-                search_with_result(phrase, &local_index_source);
-            }
-        });
-        handles.push(handle);
+fn search_with_result<'a>(phrase: &'a str, root: &'a Node) -> Result<String, NotFound<String>> {
+    let result = search(phrase, root);
+    if let Some(result) = result {
+        //result.iter().join("\n")
+        Ok(join(result, "\n"))
+    } else {
+        Err(NotFound(format!("Can't find phrase '{}'", phrase)))
     }
-    for h in handles {
-        h.join().unwrap();
-    }
-    stopwatch.stop();
-    let phrase = "Ned Land";
-    let lines = search(phrase, &index_source);
-    let search_took = stopwatch.elapsed();
-    println!("Found '{}' in {} lines", phrase, lines.unwrap().len());
-    println!("Indexing took {:?}", indexing_took);
-    println!("Searching took {:?}", search_took);
-    println!(
-        "Perform {}/s searches",
-        ((how_many_search as f64 * how_many_threads as f64 / search_took.as_micros() as f64
-            * 1_000_000f64) as i128)
-            .to_formatted_string(&Locale::en)
-    );
-}
-
-#[allow(dead_code)]
-fn basic_test() {
-    let txt = "a
-a b
-a b c
-A
-A b
-A b c
-A
-A B
-A b c
-A
-A B
-A B c
-A
-A B
-A B 
-Jerzy Brzęczyszczykiewicz
-";
-    let phrases = vec!["a", "b", "c", "a b", "b c", "a b c", " ", "non existent"];
-    let set_of_phrases: HashSet<&str> = phrases.into_iter().collect();
-    let result = join(&set_of_phrases, ",");
-    println!("set_of_phrases: {:#?}", set_of_phrases);
-    println!("result: {}", result);
-
-    println!("-------------");
-    println!("'{}'", txt);
-    println!("-------------");
-    let root = index(txt);
-    println!("{:#?}", root);
-    for phrase in set_of_phrases {
-        let empty: &HashSet<&str> = &HashSet::new();
-        let lines = search(phrase, &root).unwrap_or(empty);
-        let result = search_with_result(phrase, &root);
-        println!("'{}' -> {:?}", phrase, lines);
-        println!("vvvvvvvvvv");
-        println!("{}", result);
-        println!("^^^^^^^^^^");
-    }
-    println!("Current dir: {:?}", current_dir().unwrap());
 }
 
 fn join(set_of_str: &HashSet<&str>, sep: &str) -> String {
@@ -235,41 +141,155 @@ fn join(set_of_str: &HashSet<&str>, sep: &str) -> String {
     result
 }
 
+fn read_to_string(path: &str) -> &'static str {
+    let source = fs::read_to_string(path).unwrap();
+    Box::leak(Box::new(source))
+}
+
+fn to_lowercase(txt: &str) -> &'static str {
+    let txt_lowercase = txt.to_lowercase();
+    Box::leak(Box::new(txt_lowercase))
+}
+
 #[get("/")]
 fn r_index() -> &'static str {
     "Hello, world!"
 }
 
 #[get("/get/<line>")]
-fn get_line(line: usize) -> String {
-    let result = format!("Ask for line {}", line);
-    println!("{}", result);
-    result
+fn get_line(line: usize) -> Result<&'static str, NotFound<String>> {
+    if line < SOURCE_LINES.len() {
+        println!("Get line {}", line);
+        Ok(SOURCE_LINES[line])
+    } else {
+        let msg = format!("Can't find line {}", line);
+        println!("{}", msg);
+        Err(NotFound(msg))
+    }
 }
 
 #[get("/search?<phrase>")]
-fn search_phrase(phrase: &str) -> String {
-    let result = format!("Search for phrase '{}'", phrase);
-    println!("{}", result);
-    result
+fn search_phrase(phrase: &str) -> Result<String, NotFound<String>> {
+    println!("Search for phrase '{}'", phrase);
+    search_with_result(phrase, &ROOT)
 }
 
 #[launch]
 fn rocket() -> _ {
+    lazy_static::initialize(&ROOT);
     let figment = rocket::Config::figment().merge(("port", 8080));
-
     rocket::custom(figment).mount("/", routes![r_index, get_line, search_phrase])
 }
 
-#[test]
-fn main_test() {
-     //performance_test();
-     println!("Start");
-     println!("Initializing...");
-     lazy_static::initialize(&ROOT);
-     println!("Line 10: {}", SOURCE_LINES[10]);
-/* 
-     let phrase = "Ned Land";
-     let result = search_with_result(phrase, &ROOT);
-     println!("Phrase '{}' found in lines:\n{}", phrase, result);
- */}
+#[cfg(test)]
+mod tests {
+    use std::{
+        env::current_dir,
+        sync::Arc,
+        thread::{self, JoinHandle},
+    };
+
+    use num_format::{Locale, ToFormattedString};
+    use stopwatch::Stopwatch;
+
+    use super::*;
+
+    #[test]
+    fn performance_test() {
+        let mut stopwatch = Stopwatch::new();
+        let source_txt = read_to_string(SOURCE_TXT_PATH);
+        println!("Read source text - {} lines", source_txt.lines().count());
+        stopwatch.start();
+        let indexed_source = index(source_txt);
+        stopwatch.stop();
+        let indexing_took = stopwatch.elapsed();
+        let index_source = Arc::new(indexed_source);
+        let mut handles: Vec<JoinHandle<()>> = Default::default();
+        let how_many_search = 10_000;
+        let how_many_threads = 24;
+        stopwatch.restart();
+        for _ in 0..how_many_threads {
+            let local_index_source = index_source.clone();
+            let handle = thread::spawn(move || {
+                let phrase = "Ned Land";
+                for _ in 0..how_many_search {
+                    //search(phrase, &local_index_source);
+                    search_with_result(phrase, &local_index_source);
+                }
+            });
+            handles.push(handle);
+        }
+        for h in handles {
+            h.join().unwrap();
+        }
+        stopwatch.stop();
+        let phrase = "Ned Land";
+        let lines = search(phrase, &index_source);
+        let search_took = stopwatch.elapsed();
+        println!("Found '{}' in {} lines", phrase, lines.unwrap().len());
+        println!("Indexing took {:?}", indexing_took);
+        println!("Searching took {:?}", search_took);
+        println!(
+            "Perform {}/s searches",
+            ((how_many_search as f64 * how_many_threads as f64 / search_took.as_micros() as f64
+                * 1_000_000f64) as i128)
+                .to_formatted_string(&Locale::en)
+        );
+    }
+
+    #[test]
+    fn basic_test() {
+        let txt = "a
+a b
+a b c
+A
+A b
+A b c
+A
+A B
+A b c
+A
+A B
+A B c
+A
+A B
+A B 
+Jerzy Brzęczyszczykiewicz
+";
+        let phrases = vec!["a", "b", "c", "a b", "b c", "a b c", " ", "non existent"];
+        let set_of_phrases: HashSet<&str> = phrases.into_iter().collect();
+        let result = join(&set_of_phrases, ",");
+        println!("set_of_phrases: {:#?}", set_of_phrases);
+        println!("result: {}", result);
+
+        println!("-------------");
+        println!("'{}'", txt);
+        println!("-------------");
+        let root = index(txt);
+        println!("{:#?}", root);
+        for phrase in set_of_phrases {
+            let empty: &HashSet<&str> = &HashSet::new();
+            let lines = search(phrase, &root).unwrap_or(empty);
+            let result = search_with_result(phrase, &root);
+            println!("'{}' -> {:?}", phrase, lines);
+            println!("vvvvvvvvvv");
+            println!("{}", result.unwrap_or("empty".to_string()));
+            println!("^^^^^^^^^^");
+        }
+        println!("Current dir: {:?}", current_dir().unwrap());
+    }
+
+    #[test]
+    fn main_test() {
+        //performance_test();
+        println!("Start");
+        println!("Initializing...");
+        lazy_static::initialize(&ROOT);
+        println!("Line 10: {}", SOURCE_LINES[10]);
+        /*
+         let phrase = "Ned Land";
+         let result = search_with_result(phrase, &ROOT);
+         println!("Phrase '{}' found in lines:\n{}", phrase, result);
+     */
+    }
+}
