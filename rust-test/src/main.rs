@@ -177,7 +177,9 @@ fn search_phrase(phrase: &str) -> Result<String, NotFound<String>> {
 #[launch]
 fn rocket() -> _ {
     lazy_static::initialize(&ROOT);
-    let figment = rocket::Config::figment().merge(("port", 8080));
+    let figment = rocket::Config::figment()
+        .merge(("port", 8080))
+        .merge(("address", "0.0.0.0"));
     rocket::custom(figment).mount("/", routes![r_index, get_line, search_phrase])
 }
 
@@ -287,9 +289,9 @@ Jerzy Brzęczyszczykiewicz
         lazy_static::initialize(&ROOT);
         println!("Line 10: {}", SOURCE_LINES[10]);
         /*
-         let phrase = "Ned Land";
-         let result = search_with_result(phrase, &ROOT);
-         println!("Phrase '{}' found in lines:\n{}", phrase, result);
-     */
+            let phrase = "Ned Land";
+            let result = search_with_result(phrase, &ROOT);
+            println!("Phrase '{}' found in lines:\n{}", phrase, result);
+        */
     }
 }
