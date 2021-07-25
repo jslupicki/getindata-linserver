@@ -15,13 +15,20 @@ COPY Cargo.toml  ./
 COPY src ./src
 
 RUN cargo install --target x86_64-unknown-linux-musl --path .
-RUN cp /usr/local/cargo/bin/${NAME} /usr/src/result
+
+WORKDIR /usr/src
+RUN cp /usr/local/cargo/bin/${NAME} result
+COPY 20_000_mil_podmorskiej_zeglugi.txt .
+#ENV ROCKET_ADDRESS=0.0.0.0
+#EXPOSE 8080
+#CMD ["./result"]
 
 # Copy the statically-linked binary into a scratch container.
 FROM scratch
 #FROM alpine:latest
 COPY --from=build /usr/src/result .
-COPY 20_000_mil_podmorskiej_zeglugi.txt .
+COPY --from=build /usr/src/20_000_mil_podmorskiej_zeglugi.txt .
+ENV ROCKET_ADDRESS=0.0.0.0
 EXPOSE 8080
 CMD ["./result"]
 
