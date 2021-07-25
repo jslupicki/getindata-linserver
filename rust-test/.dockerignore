@@ -1,0 +1,6 @@
+.idea
+target
+docker-compose.yml
+Dockerfile
+run-performance-test.cmd
+run-performance-test.sh
