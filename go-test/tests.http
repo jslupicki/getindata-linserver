@@ -1,0 +1,16 @@
+GET http://localhost:8080
+Accept: text/plain
+
+###
+GET http://localhost:8080/get/23
+Accept: text/plain
+
+###
+GET http://localhost:8080/get/4000
+Accept: text/plain
+
+###
+GET http://localhost:8080/search?phrase=ned+land
+Accept: text/plain
+
+###
