@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
+	"unicode"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -50,6 +52,22 @@ func readFile(fileName string) []string {
 		text = append(text, scanner.Text())
 	}
 	return text
+}
+
+func tokenizer(text string) []string {
+	var result []string
+	lowercaseText := strings.ToLower(text)
+	lastWasAlphanumeric := false
+	li := 0
+	for i, c := range text {
+		isAlphanumeric := unicode.IsLetter(c) || unicode.IsDigit(c)
+		if isAlphanumeric != lastWasAlphanumeric && li != i {
+			result = append(result, lowercaseText[li:i])
+			li = i
+		}
+		lastWasAlphanumeric = isAlphanumeric
+	}
+	return append(result, lowercaseText[li:])
 }
 
 func main() {

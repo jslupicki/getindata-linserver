@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 	"github.com/t-tomalak/logrus-easy-formatter"
 	"os"
 	"testing"
@@ -33,4 +34,14 @@ func Test_main(t *testing.T) {
 		LogFormat:       "[%lvl%]: %time% - %msg%\n",
 	})
 	log.Infof("Hello to log: %s", "abba")
+}
+
+func Test_tokenizer(t *testing.T) {
+	text := "abba ab12 AAACCC   ,.,. ŁucjaBrzęczyszczykiewicz"
+	expectedResult := []string{
+		"abba", " ", "ab12", " ", "aaaccc", "   ,.,. ", "łucjabrzęczyszczykiewicz",
+	}
+	tokenized := tokenizer(text)
+
+	assert.ElementsMatch(t, tokenized, expectedResult)
 }
