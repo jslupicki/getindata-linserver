@@ -41,7 +41,54 @@ func Test_tokenizer(t *testing.T) {
 	expectedResult := []string{
 		"abba", " ", "ab12", " ", "aaaccc", "   ,.,. ", "łucjabrzęczyszczykiewicz",
 	}
-	tokenized := tokenizer(text)
+	tokenized := tokenizer(&text)
 
 	assert.ElementsMatch(t, tokenized, expectedResult)
+}
+
+func Test_indexLine(t *testing.T) {
+	line := "a B c"
+	root := Node{
+		"",
+		map[int]bool{},
+		map[string]*Node{},
+	}
+
+	indexLine(&root, &line, 1)
+
+	keys := getKeys(root.children)
+	expectedKeys := []string{"a", " ", "b", "c"}
+	assert.ElementsMatch(t, keys, expectedKeys)
+
+	key := "b"
+	node := root.children[key]
+	assert.True(t, node.lines[1])
+	assert.True(t, len(node.lines) == 1)
+	keys = getKeys(node.children)
+	expectedKeys = []string{" "}
+	assert.ElementsMatch(t, keys, expectedKeys)
+
+	key = "c"
+	node = root.children[key]
+	assert.True(t, node.lines[1])
+	assert.True(t, len(node.lines) == 1)
+	keys = getKeys(node.children)
+	expectedKeys = []string{}
+	assert.ElementsMatch(t, keys, expectedKeys)
+
+	key = " "
+	node = root.children[key]
+	assert.True(t, node.lines[1])
+	assert.True(t, len(node.lines) == 1)
+	keys = getKeys(node.children)
+	expectedKeys = []string{"b", "c"}
+	assert.ElementsMatch(t, keys, expectedKeys)
+}
+
+func getKeys(nodeMap map[string]*Node) []string {
+	result := []string{}
+	for k := range nodeMap {
+		result = append(result, k)
+	}
+	return result
 }
