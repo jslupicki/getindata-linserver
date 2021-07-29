@@ -1,0 +1,8 @@
+version: "3.9"
+services:
+  go-search-service-20000:
+    build: .
+    image: "getindata-linserver-go-test-compose"
+    ports:
+      - "8080:8080"
+
