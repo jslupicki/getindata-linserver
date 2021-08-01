@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/t-tomalak/logrus-easy-formatter"
 	"os"
-	"strings"
 	"testing"
 )
 
@@ -86,9 +84,9 @@ A B C
 Jerzy Brzęczyszczykiewicz`
 	phrasesAndExpectedResults := map[string][]string{
 		"non existent": nil,
-		"jerzy": {"Jerzy Brzęczyszczykiewicz"},
-		"B c": {"a b c", "A b c", "A B c", "A B C"},
-		" ": {"a b", "a b c", "A b", "A b c", "A B", "A B c", "A B", "A B C", "Jerzy Brzęczyszczykiewicz"},
+		"jerzy":        {"Jerzy Brzęczyszczykiewicz"},
+		"B c":          {"a b c", "A b c", "A B c", "A B C"},
+		" ":            {"a b", "a b c", "A b", "A b c", "A B", "A B c", "A B", "A B C", "Jerzy Brzęczyszczykiewicz"},
 	}
 	root := Node{
 		"",
@@ -116,13 +114,4 @@ func getKeys(nodeMap map[string]*Node) []string {
 		result = append(result, k)
 	}
 	return result
-}
-
-func splitByNewline(text string) []string {
-	scanner := bufio.NewScanner(strings.NewReader(text))
-	var textTab []string
-	for scanner.Scan() {
-		textTab = append(textTab, scanner.Text())
-	}
-	return textTab
 }
