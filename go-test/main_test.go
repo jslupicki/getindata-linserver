@@ -1,30 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/t-tomalak/logrus-easy-formatter"
 	"os"
+	"strings"
 	"testing"
 )
-
-func Test_search(t *testing.T) {
-	type args struct {
-		c *gin.Context
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-		})
-	}
-}
 
 func Test_main(t *testing.T) {
 	fmt.Printf("Hello %s\n", "abba")
@@ -85,10 +70,59 @@ func Test_indexLine(t *testing.T) {
 	assert.ElementsMatch(t, keys, expectedKeys)
 }
 
+func Test_search(t *testing.T) {
+	text := `a
+a b
+a b c
+A
+A b
+A b c
+A
+A B
+A B c
+A
+A B
+A B C
+Jerzy Brzęczyszczykiewicz`
+	phrasesAndExpectedResults := map[string][]string{
+		"non existent": nil,
+		"jerzy": {"Jerzy Brzęczyszczykiewicz"},
+		"B c": {"a b c", "A b c", "A B c", "A B C"},
+		" ": {"a b", "a b c", "A b", "A b c", "A B", "A B c", "A B", "A B C", "Jerzy Brzęczyszczykiewicz"},
+	}
+	root := Node{
+		"",
+		map[int]bool{},
+		map[string]*Node{},
+	}
+	textTab := splitByNewline(text)
+	indexText(&root, &textTab)
+
+	for phrase, expectedResult := range phrasesAndExpectedResults {
+		result, err := searchPhraseInTree(&root, phrase, &textTab)
+		if err != nil {
+			fmt.Printf("Phrase '%s' not found\n", phrase)
+		} else {
+			fmt.Printf("Phrase '%s':\n%s\n", phrase, result)
+		}
+		resultAsTab := splitByNewline(result)
+		assert.ElementsMatch(t, resultAsTab, expectedResult)
+	}
+}
+
 func getKeys(nodeMap map[string]*Node) []string {
 	result := []string{}
 	for k := range nodeMap {
 		result = append(result, k)
 	}
 	return result
+}
+
+func splitByNewline(text string) []string {
+	scanner := bufio.NewScanner(strings.NewReader(text))
+	var textTab []string
+	for scanner.Scan() {
+		textTab = append(textTab, scanner.Text())
+	}
+	return textTab
 }

@@ -2,9 +2,11 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"unicode"
@@ -112,10 +114,30 @@ func indexText(root *Node, text *[]string) {
 	for i, line := range *text {
 		indexLine(root, &line, i)
 		if i%100 == 0 {
-			log.Infof("Indexed line %d from %d", i, howManyLines)
+			log.Infof("Indexed line %d from %d", i+1, howManyLines)
 		}
 	}
 	log.Infof("Indexed line %d from %d", howManyLines, howManyLines)
+}
+
+func searchPhrase(phrase string) (string, error) {
+	return searchPhraseInTree(&ROOT, phrase, &text)
+}
+
+func searchPhraseInTree(root *Node, phrase string, text *[]string) (string, error) {
+	result := []string{}
+	tokenizedPhrase := tokenizer(&phrase)
+	node := root
+	for _, token := range tokenizedPhrase {
+		node = node.children[token]
+		if node == nil {
+			return "", errors.New("not found")
+		}
+	}
+	for line := range node.lines {
+		result = append(result, (*text)[line])
+	}
+	return strings.Join(result, "\n"), nil
 }
 
 func main() {
@@ -124,6 +146,7 @@ func main() {
 		TimestampFormat: "2006-01-02 15:04:05",
 		LogFormat:       "[%lvl%]: %time% - %msg%\n",
 	})
+	log.Infof("GOMAXPROCS is %d", runtime.GOMAXPROCS(0))
 	fileName := "20_000_mil_podmorskiej_zeglugi.txt"
 	text = readFile(fileName)
 	log.Infof("Read %d lines from '%s'", len(text), fileName)
