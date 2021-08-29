@@ -127,12 +127,15 @@ fn search_with_result<'a>(phrase: &'a str, root: &'a Node) -> Result<String, Not
     }
 }
 
-fn join(set_of_str: &HashSet<&str>, sep: &str) -> String {
-    let sep_count = set_of_str.len() - 1;
-    let result_len: usize =
-        set_of_str.iter().map(|s| s.len()).sum::<usize>() + sep_count * sep.len();
+fn join<'a, T>(str_collection: &'a T, sep: &str) -> String
+    where
+        T: 'a,
+        &'a T: IntoIterator<Item=&'a &'a str>,
+{
+    let sep_count = str_collection.into_iter().count() - 1;
+    let result_len = str_collection.into_iter().map(|s| s.len()).sum::<usize>() + sep_count * sep.len();
     let mut result = String::with_capacity(result_len);
-    set_of_str.iter().enumerate().for_each(|(i, s)| {
+    str_collection.into_iter().enumerate().for_each(|(i, s)| {
         result.push_str(s);
         if i < sep_count {
             result.push_str(sep);
@@ -216,7 +219,7 @@ mod tests {
                 let phrase = "Ned Land";
                 for _ in 0..how_many_search {
                     //search(phrase, &local_index_source);
-                    search_with_result(phrase, &local_index_source);
+                    let _ = search_with_result(phrase, &local_index_source);
                 }
             });
             handles.push(handle);
