@@ -3,5 +3,4 @@ docker-compose.yml
 Dockerfile
 run-performance-test.cmd
 run-performance-test.sh
-go.sum
 *.http
