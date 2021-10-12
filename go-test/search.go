@@ -96,7 +96,7 @@ func searchPhrase(phrase string) (string, error) {
 }
 
 func searchPhraseInTree(root *Node, phrase string, text *[]string) (string, error) {
-	result := []string{}
+	var result []string
 	tokenizedPhrase := tokenizer(&phrase)
 	node := root
 	for _, token := range tokenizedPhrase {

@@ -109,7 +109,7 @@ Jerzy Brzęczyszczykiewicz`
 }
 
 func getKeys(nodeMap map[string]*Node) []string {
-	result := []string{}
+	var result []string
 	for k := range nodeMap {
 		result = append(result, k)
 	}
