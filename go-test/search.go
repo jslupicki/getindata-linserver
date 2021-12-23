@@ -13,7 +13,7 @@ import (
 )
 
 var TEXT []string
-var ROOT Node = Node{
+var ROOT = Node{
 	"",
 	map[int]bool{},
 	map[string]*Node{},
