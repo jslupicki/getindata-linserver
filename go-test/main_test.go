@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/t-tomalak/logrus-easy-formatter"
 	"os"
+	"runtime"
 	"testing"
 )
 
@@ -114,4 +115,19 @@ func getKeys(nodeMap map[string]*Node) []string {
 		result = append(result, k)
 	}
 	return result
+}
+
+func Test_performance(t *testing.T) {
+	log.SetOutput(os.Stdout)
+	log.SetFormatter(&easy.Formatter{
+		TimestampFormat: "2006-01-02 15:04:05",
+		LogFormat:       "[%lvl%]: %time% - %msg%\n",
+	})
+	log.Infof("GOMAXPROCS is %d", runtime.GOMAXPROCS(0))
+	fileName := "20_000_mil_podmorskiej_zeglugi.txt"
+	TEXT = readFile(fileName)
+	log.Infof("Read %d lines from '%s'", len(TEXT), fileName)
+	indexText(&ROOT, &TEXT)
+	result := performanceTest("Ned Land", 24, 10_000)
+	fmt.Printf("Results:\n%v", result)
 }
