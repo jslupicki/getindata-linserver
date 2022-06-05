@@ -25,13 +25,12 @@ type Node struct {
 	children map[string]*Node
 }
 
-func readFile(fileName string) []string {
+func readFile(fileName string) (text []string) {
 	file, err := os.Open(fileName)
 	if err != nil {
 		logrus.Fatalf("Can't open file '%s'", fileName)
 	}
 	scanner := bufio.NewScanner(file)
-	var text []string
 	for scanner.Scan() {
 		text = append(text, scanner.Text())
 	}
@@ -42,8 +41,7 @@ func isAlphanumeric(c rune) bool {
 	return unicode.IsLetter(c) || unicode.IsDigit(c)
 }
 
-func tokenizer(text *string) []string {
-	var result []string
+func tokenizer(text *string) (result []string) {
 	lowercaseText := strings.ToLower(*text)
 	lastWasAlphanumeric := false
 	li := 0
@@ -55,7 +53,8 @@ func tokenizer(text *string) []string {
 		}
 		lastWasAlphanumeric = isAlphanumeric
 	}
-	return append(result, lowercaseText[li:])
+	result = append(result, lowercaseText[li:])
+	return result
 }
 
 func indexLine(root *Node, line *string, lineNumber int) {
@@ -95,7 +94,7 @@ func searchPhrase(phrase string) (string, error) {
 	return searchPhraseInTree(&ROOT, phrase, &TEXT)
 }
 
-func searchPhraseInTree(root *Node, phrase string, text *[]string) (string, error) {
+func searchPhraseInTree(root *Node, phrase string, text *[]string) (resultJoin string, err error) {
 	var result []string
 	tokenizedPhrase := tokenizer(&phrase)
 	node := root
@@ -108,10 +107,11 @@ func searchPhraseInTree(root *Node, phrase string, text *[]string) (string, erro
 	for line := range node.lines {
 		result = append(result, (*text)[line])
 	}
-	return strings.Join(result, "\n"), nil
+	resultJoin, err = strings.Join(result, "\n"), nil
+	return
 }
 
-func performanceTest(phrase string, howManyThreads int, howManySearches int) string {
+func performanceTest(phrase string, howManyThreads int, howManySearches int) (result string) {
 	searchResult, err := searchPhrase(phrase)
 	if err != nil {
 		return fmt.Sprintf("Error: %s", err.Error())
@@ -130,16 +130,15 @@ func performanceTest(phrase string, howManyThreads int, howManySearches int) str
 	wg.Wait()
 	watch.Stop()
 	foundInLines := len(splitByNewline(searchResult))
-	result := fmt.Sprintf("Performance test took %dms\n", watch.Milliseconds())
+	result = fmt.Sprintf("Performance test took %dms\n", watch.Milliseconds())
 	result += fmt.Sprintf("Phrase '%s' found in %d lines\n", phrase, foundInLines)
 	result += fmt.Sprintf("Performed %d searches\n", howManySearches*howManyThreads)
 	result += fmt.Sprintf("It give %d/s\n", howManySearches*howManyThreads*1000/int(watch.Milliseconds()))
 	return result
 }
 
-func splitByNewline(text string) []string {
+func splitByNewline(text string) (textTab []string) {
 	scanner := bufio.NewScanner(strings.NewReader(text))
-	var textTab []string
 	for scanner.Scan() {
 		textTab = append(textTab, scanner.Text())
 	}

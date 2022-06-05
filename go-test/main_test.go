@@ -109,12 +109,11 @@ Jerzy Brzęczyszczykiewicz`
 	}
 }
 
-func getKeys(nodeMap map[string]*Node) []string {
-	var result []string
+func getKeys(nodeMap map[string]*Node) (result []string) {
 	for k := range nodeMap {
 		result = append(result, k)
 	}
-	return result
+	return
 }
 
 func Test_performance(t *testing.T) {
